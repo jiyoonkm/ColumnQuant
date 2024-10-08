@@ -1,9 +1,5 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import math
-from torch.optim.lr_scheduler import _LRScheduler
-
 
 # Bit split
 class split4d(nn.Module):
@@ -35,13 +31,13 @@ class split4d(nn.Module):
         output[0] = input
         return output
 
-# Mapping
-# im2col weight mapping
+# Im2col weight mapping
 def im2col_weight(kernel):
     output_channel = kernel.shape[0]
     mapping = kernel.view(output_channel, -1)
     return mapping
 
+# CIM array tiling
 class weightTile_HxW():
     def __init__(self, h, w, ic, oc, ker, isRow):                                        # h x w array
         self.h = h
