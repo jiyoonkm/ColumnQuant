@@ -9,8 +9,8 @@ from torch.nn.modules.batchnorm import BatchNorm2d
 import numpy as np
 import math
 
-from .LSQ import LsqWeight, LsqPsum
-from .utils import split4d, im2col_weight, weightTile_HxW
+from LSQ import LsqWeight, LsqPsum
+from utils import split4d, im2col_weight, weightTile_HxW
 
 class SplitConv4Pim_group(torch.nn.Module):
     def __init__(self, w_bit, split_bit, w_mode, ps_bit, num_sigma, psum_mode, in_planes, planes, kernel_size, N, stride=1, padding=1, bias=False, isRow=True, w_per_ch=False, ps_per_ch=False, psumOpt=True):
