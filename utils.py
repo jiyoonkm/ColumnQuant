@@ -44,7 +44,7 @@ class weightTile_HxW():
         self.w = w
         self.input_w = ic*(ker**2)
         self.input_h = oc                                                           # expanded number of OCs
-        self.isRow = isRow                                                          # determine whether tile along OC direction
+        self.isRow = isRow                                                          # determine whether to tile along OC direction
 
         self.arrays = 0                                                             # initialize the number of arrays
         self.col_slide = 0
