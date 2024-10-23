@@ -6,10 +6,10 @@ from torch.autograd import Function
 from torch.nn.modules.batchnorm import BatchNorm2d
 import numpy as np
 
-from lib.any_quant import qfn, activation_quantize_fn, weight_quantize_fn, psum_quantize_fn, Activate, Linear_Q#, BatchNorm2d_Q
-from lib.LSQ import LsqWeight, LsqPsum
-from lib.utils import split4d, im2col_weight, im2col_acti, weightTile, weightTile_new, weightTile_HxW
-from lib.SplitConv4Pim_group import SplitConv4Pim_group
+from any_quant import qfn, activation_quantize_fn, weight_quantize_fn, psum_quantize_fn, Activate, Linear_Q#, BatchNorm2d_Q
+from LSQ import LsqWeight, LsqPsum
+from utils import split4d, im2col_weight, im2col_acti, weightTile, weightTile_new, weightTile_HxW
+from SplitConv4Pim_group import SplitConv4Pim_group
 
 class BasicBlock_arr(nn.Module):
     """Pre-activation version of the BasicBlock.
