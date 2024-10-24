@@ -97,38 +97,28 @@ class LsqPsum(nn.Module):
         return x_q
 
 
-# # return integer output
-# class LsqPsum_int(nn.Module):
-#     def __init__(self, bit, num_sigma, per_channel, oc):
-#         super().__init__()
-#         self.psbit = bit
-#         self.num_sigma = num_sigma
-#         self.thd_neg = -2**(bit-1)                                  # [-4, +3]
-#         self.thd_pos = 2**(bit-1)-1
-#         self.per_channel = per_channel                              # whether col-wise or not
-#         self.oc = oc
+# for absolte-valued weight
+class LsqWeight_v2(nn.Module):
+    def __init__(self, bit, per_channel):
+        super().__init__()
+        self.wbit = bit
+        self.thd_neg = 0
+        self.thd_pos = 2**bit-1
+        self.per_channel = per_channel                              # whether col-wise or not
+        self.sf = nn.Parameter(torch.ones(1))
 
-#         num_levels = 2**bit-1
-#         if self.per_channel:
-#             self.sf = nn.Parameter(torch.ones(1, self.oc, 1, 1)*100/num_levels)
-#         else:
-#             self.sf = nn.Parameter(torch.tensor([100/num_levels]))
+    def init_from(self, x, *args, **kwargs):
+        if self.per_channel:
+            self.sf = nn.Parameter(
+                x.detach().abs().mean(dim=list(range(1, x.dim())), keepdim=True))       # LSQ paper v2
+        else:
+            self.sf = nn.Parameter(x.detach().abs().mean())                             # LSQ paper v2
 
-#     def forward(self, x):
-#         # s_grad_scale = 1.0 / ((self.thd_pos * x.numel()) ** 0.5)                        # LSQ paper v1
-#         s_grad_scale = 1e-1                                                             # LSQ paper v2: activation 1e-1
-#         s_scale = grad_scale(self.sf, s_grad_scale)
-#         if self.per_channel:
-#             mu = torch.mean(x, dim=(0, 2, 3), keepdim=True)
-#             sigma = torch.std(x, dim=(0, 2, 3), keepdim=True)
-#         else:
-#             mu = torch.mean(x)
-#             sigma = torch.std(x)
+    def forward(self, x):
+        s_grad_scale = 1e-4                                                             # LSQ paper v2: 1e-2 ~ 1e-4 / tried 1e-5
+        s_scale = grad_scale(self.sf, s_grad_scale)
 
-#         x_clip = torch.clamp(x, mu - self.num_sigma * sigma, mu + self.num_sigma * sigma)   # clip by num_sigma
+        w_q_int = torch.clamp(round_pass(x / s_scale), self.thd_neg, self.thd_pos)
+        w_q = w_q_int * s_scale
 
-#         # x_q_int = round_pass(x_clip/s_scale)
-#         x_q_int = torch.clamp(round_pass(x_clip / s_scale), self.thd_neg, self.thd_pos)
-#         x_q = x_q_int * s_scale
-
-#         return x_q_int
+        return w_q, w_q_int, s_scale
