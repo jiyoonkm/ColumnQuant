@@ -9,7 +9,7 @@ from torch.nn.modules.batchnorm import BatchNorm2d
 import numpy as np
 import math
 
-from LSQ import LsqWeight, LsqPsum
+from LSQ import LsqWeight, LsqWeight_v2, LsqPsum
 from utils import split4d, im2col_weight, weightTile_HxW
 
 class SplitConv4Pim_group(torch.nn.Module):
@@ -380,8 +380,8 @@ class Conv4Pim_group_split_v2(nn.Module):
 
         self.num_ic = math.floor(self.N / (self.kernel_size**2))
 
-        self.weight_quantize_fn_p = LsqWeight(self.w_bit, self.w_per_ch)
-        self.weight_quantize_fn_n = LsqWeight(self.w_bit, self.w_per_ch)
+        self.weight_quantize_fn_p = LsqWeight_v2(self.w_bit, self.w_per_ch)
+        self.weight_quantize_fn_n = LsqWeight_v2(self.w_bit, self.w_per_ch)
         self.weight_tiler = weightTile_HxW(self.N*self.groups, self.N, self.ic, self.oc*self.groups, self.kernel_size, self.isRow)
         self.splitter = split4d(self.w_bit, self.split_bit)
 
@@ -563,8 +563,8 @@ class Conv4Pim_group_arr_v2(nn.Module):
         w_quan_fn_p = []
         w_quan_fn_n = []
         for i in range(self.num_arrays):
-            w_quan_fn_p.append(LsqWeight(self.w_bit, self.w_per_ch))
-            w_quan_fn_n.append(LsqWeight(self.w_bit, self.w_per_ch))
+            w_quan_fn_p.append(LsqWeight_v2(self.w_bit, self.w_per_ch))
+            w_quan_fn_n.append(LsqWeight_v2(self.w_bit, self.w_per_ch))
         self.w_quan_fn_p = nn.ModuleList(w_quan_fn_p)
         self.w_quan_fn_n = nn.ModuleList(w_quan_fn_n)
 
