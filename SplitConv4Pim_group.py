@@ -53,11 +53,11 @@ class SplitConv4Pim_group(torch.nn.Module):
         for s in range(self.num_splits):
 
             if self.w_mode == 'Array':
-                # conv_module = Conv4Pim_group_arr(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
-                conv_module = Conv4Pim_group_arr_v2(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
+                conv_module = Conv4Pim_group_arr(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
+                # conv_module = Conv4Pim_group_arr_v2(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
             elif self.w_mode == 'Layer':
-                # conv_module = Conv4Pim_group_split(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
-                conv_module = Conv4Pim_group_split_v2(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
+                conv_module = Conv4Pim_group_split(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
+                # conv_module = Conv4Pim_group_split_v2(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
 
             conv_module.weight = self.weight
             conv_module.bias = self.bias
