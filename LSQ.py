@@ -54,8 +54,8 @@ class LsqPsum(nn.Module):
         super().__init__()
         self.psbit = bit
         self.num_sigma = num_sigma
-        self.thd_neg = -2**(bit-1)
-        self.thd_pos = 2**(bit-1)-1
+        self.thd_neg = 0                                  # [-4, +3]
+        self.thd_pos = 2**(bit)-1
         self.per_channel = per_channel
         self.oc = oc
 
@@ -69,7 +69,7 @@ class LsqPsum(nn.Module):
 
     def forward(self, x):
         # s_grad_scale = 1.0 / ((self.thd_pos * x.numel()) ** 0.5)                        # LSQ paper v1
-        s_grad_scale = 1e-1                                                             # 1e-2 ~ 1 depending on granularity
+        s_grad_scale = 1e-2                                                             # 1e-2 ~ 1 depending on granularity
         s_scale = grad_scale(self.sf, s_grad_scale)
         
         if self.per_channel:
@@ -84,17 +84,23 @@ class LsqPsum(nn.Module):
         center = torch.round(torch.mean(x_q_int))
 
         if self.psbit == 1.5: # symmetric quantizer
-            # center = center + 0.5
-            x_q_int = torch.where(x_q_int > center+0.5, (center+1).clone().detach(),
-                      torch.where(x_q_int < center-0.5, (center-1).clone().detach(),
-                                  torch.tensor(center, device=x.device)))
-        else:
-            thd_neg = center - 2**(self.psbit-1)
-            thd_pos = center + 2**(self.psbit-1)-1
+            thd_neg = center - 1
+            thd_pos = center + 1
             x_q_int = torch.clamp(x_q_int, thd_neg, thd_pos)
+            x_q = x_q_int * s_scale
+        else:
+            if self.psbit==1:
+                thd_neg = center
+                thd_pos = center + 1
+            else:
+                thd_neg = center - 2**(self.psbit-1)
+                thd_pos = center + 2**(self.psbit-1) - 1
+            x_q_int = torch.clamp(x_q_int, thd_neg, thd_pos)
+            x_q = x_q_int * s_scale
 
         x_q = x_q_int * s_scale
         return x_q
+
 
 
 # for absolte-valued weight
