@@ -53,11 +53,11 @@ class SplitConv4Pim_group(torch.nn.Module):
         for s in range(self.num_splits):
 
             if self.w_mode == 'Array':
-                conv_module = Conv4Pim_group_arr(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
-                # conv_module = Conv4Pim_group_arr_v2(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
+                # conv_module = Conv4Pim_group_arr(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
+                conv_module = Conv4Pim_group_arr_v2(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
             elif self.w_mode == 'Layer':
-                conv_module = Conv4Pim_group_split(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
-                # conv_module = Conv4Pim_group_split_v2(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
+                # conv_module = Conv4Pim_group_split(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
+                conv_module = Conv4Pim_group_split_v2(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
 
             conv_module.weight = self.weight
             conv_module.bias = self.bias
@@ -378,10 +378,11 @@ class Conv4Pim_group_split_v2(nn.Module):
         self.ps_per_ch = ps_per_ch
         self.psumOpt = psumOpt
 
-        self.num_ic = math.floor(self.N / (self.kernel_size**2))
+        self.num_ic = min(self.ic, self.N // (self.kernel_size**2))
 
         self.weight_quantize_fn_p = LsqWeight_v2(self.w_bit, self.w_per_ch)
         self.weight_quantize_fn_n = LsqWeight_v2(self.w_bit, self.w_per_ch)
+
         self.weight_tiler = weightTile_HxW(self.N*self.groups, self.N, self.ic, self.oc*self.groups, self.kernel_size, self.isRow)
         self.splitter = split4d(self.w_bit, self.split_bit)
 
@@ -417,7 +418,8 @@ class Conv4Pim_group_split_v2(nn.Module):
         self.w_q, self.w_q_int, self.scale_factor = self.weight_quantize_fn_p(self.weight_p)
 
         ''' 2. Split '''
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        # simpler LsqWeight
         self.w_split = (self.splitter(self.w_q_int)[self.idx]).to(device)    # split weight tensor
 
         ''' 3. Group Conv '''
@@ -459,13 +461,14 @@ class Conv4Pim_group_split_v2(nn.Module):
         else:
             for i in range(self.groups):
                 output_p += self.arr_output[i]
-        
+
         ''' NEGATIVE '''
         ''' 1. Weight Quantization '''
         self.w_q, self.w_q_int, self.scale_factor = self.weight_quantize_fn_n(self.weight_n)
 
         ''' 2. Split '''
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        # simpler LsqWeight
         self.w_split = (self.splitter(self.w_q_int)[self.idx]).to(device)    # split weight tensor
 
         ''' 3. Group Conv '''
@@ -533,7 +536,7 @@ class Conv4Pim_group_arr_v2(nn.Module):
         self.ps_per_ch = ps_per_ch
         self.psumOpt = psumOpt
 
-        self.num_ic = math.floor(self.N / (self.kernel_size**2))
+        self.num_ic = min(self.ic, self.N // (self.kernel_size**2))
 
         self.weight_tiler = weightTile_HxW(self.N*self.groups, self.N, self.ic, self.oc*self.groups, self.kernel_size, self.isRow)
         self.splitter = split4d(self.w_bit, self.split_bit)
@@ -633,7 +636,7 @@ class Conv4Pim_group_arr_v2(nn.Module):
         else:
             arr_oc = self.oc
 
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         # Make a stack of weight
         w_list = [[] for _ in range(row_slide)]
@@ -647,8 +650,6 @@ class Conv4Pim_group_arr_v2(nn.Module):
                         temp_weight = self.im2col_weight[col_slide*j+k][:num_oc-empty, :self.num_ic*(self.kernel_size**2)].reshape(num_oc-empty, self.num_ic, self.kernel_size, self.kernel_size)
                     w_q, w_int, sf= self.w_quan_fn_p[col_slide*j+k](temp_weight)
                     w_split = (self.splitter(w_int)[self.idx]).to(device)
-                    if self.idx==0:
-                        w_split = w_split - move
                     temp_weight_q = w_split*sf
                     w_list[j].append(temp_weight_q)
             else:
@@ -659,8 +660,6 @@ class Conv4Pim_group_arr_v2(nn.Module):
                         temp_weight = self.im2col_weight[col_slide*j+k][:, :self.num_ic*(self.kernel_size**2)].reshape(num_oc, self.num_ic, self.kernel_size, self.kernel_size)
                     w_q, w_int, sf = self.w_quan_fn_p[col_slide*j+k](temp_weight)
                     w_split = (self.splitter(w_int)[self.idx]).to(device)
-                    if self.idx==0:
-                        w_split = w_split - move
                     temp_weight_q = w_split*sf
                     w_list[j].append(temp_weight_q)
             w_list[j] = torch.cat(w_list[j], dim=1)
@@ -668,7 +667,7 @@ class Conv4Pim_group_arr_v2(nn.Module):
 
         ''' 4. Group Conv '''
         img = torch.cat([input]*self.groups, dim=1)                             # expand input for group conv
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         output_p = 0
 
         out_list = [[] for _ in range(row_slide)]
@@ -697,7 +696,7 @@ class Conv4Pim_group_arr_v2(nn.Module):
         else:
             for i in range(self.groups):
                 output_p += self.arr_output[i]
-        
+
         ''' NEGATIVE '''
         ''' 1. Mapping '''
         self.kernel_stretched = im2col_weight(torch.relu(-self.weight))
@@ -723,7 +722,7 @@ class Conv4Pim_group_arr_v2(nn.Module):
         else:
             arr_oc = self.oc
 
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         # Make a stack of weight
         w_list = [[] for _ in range(row_slide)]
@@ -737,8 +736,6 @@ class Conv4Pim_group_arr_v2(nn.Module):
                         temp_weight = self.im2col_weight[col_slide*j+k][:num_oc-empty, :self.num_ic*(self.kernel_size**2)].reshape(num_oc-empty, self.num_ic, self.kernel_size, self.kernel_size)
                     w_q, w_int, sf= self.w_quan_fn_n[col_slide*j+k](temp_weight)
                     w_split = (self.splitter(w_int)[self.idx]).to(device)
-                    if self.idx==0:
-                        w_split = w_split - move
                     temp_weight_q = w_split*sf
                     w_list[j].append(temp_weight_q)
             else:
@@ -749,8 +746,6 @@ class Conv4Pim_group_arr_v2(nn.Module):
                         temp_weight = self.im2col_weight[col_slide*j+k][:, :self.num_ic*(self.kernel_size**2)].reshape(num_oc, self.num_ic, self.kernel_size, self.kernel_size)
                     w_q, w_int, sf = self.w_quan_fn_n[col_slide*j+k](temp_weight)
                     w_split = (self.splitter(w_int)[self.idx]).to(device)
-                    if self.idx==0:
-                        w_split = w_split - move
                     temp_weight_q = w_split*sf
                     w_list[j].append(temp_weight_q)
             w_list[j] = torch.cat(w_list[j], dim=1)
@@ -758,7 +753,7 @@ class Conv4Pim_group_arr_v2(nn.Module):
 
         ''' 4. Group Conv '''
         img = torch.cat([input]*self.groups, dim=1)                             # expand input for group conv
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         output_n = 0
 
         out_list = [[] for _ in range(row_slide)]
