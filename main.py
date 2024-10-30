@@ -18,10 +18,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 import time
+from datetime import datetime
 
 from any_quant import qfn, activation_quantize_fn, weight_quantize_fn, psum_quantize_fn, Activate, BatchNorm2d_Q, Linear_Q
 from LSQ import LsqWeight, LsqPsum
-from utils import split4d, im2col_weight, im2col_acti, weightTile, weightTile_new, weightTile_HxW
+from utils import split4d, im2col_weight, weightTile_HxW
 from resnet_quan import *
 
 def main():
@@ -29,32 +30,31 @@ def main():
     parser = argparse.ArgumentParser(description='Parameter Processing')
     parser.add_argument('--a_bit', default=4, type=int, help='activation bit-width')
     parser.add_argument('--w_bit', default=4, type=int, help='weight bit-width')
-    parser.add_argument('--split_bit', default=4, type=int, help='split bit-width')
+    parser.add_argument('--split_bit', default=2, type=int, help='split bit-width')
     parser.add_argument('--ps_bit', default=4, type=int, help='partial-sum bit-width')
     parser.add_argument('--num_sigma', default=6, type=int, help='number of standard deviation')
 
     parser.add_argument('--w_mode', default='Layer', type=str, help='weight mode')
-    parser.add_argument('--ps_mode', default='Array', type=str, help='partial-sum mode')
+    parser.add_argument('--ps_mode', default='Layer', type=str, help='partial-sum mode')
 
     parser.add_argument('--isRow', action='store_true', default=False, help='whether to row-direction tiling')
     parser.add_argument('--w_ch', action='store_true', default=False, help='whether to weight channel-wise')
     parser.add_argument('--ps_ch', action='store_true', default=False, help='whether to partial-sum channel-wise')
-    parser.add_argument('--psumOpt', action='store_true', default=False, help='whether to quantize partial-sum')
+    parser.add_argument('--psumOpt', action='store_false', default=True, help='whether to quantize partial-sum')
 
-    parser.add_argument('--arr_size', type=int, default=512, help='CIM array size')
+    parser.add_argument('--arr_size', type=int, default=128, help='CIM array size')
 
     # Optimizer and scheduler
     parser.add_argument('--dataset', type=str, default='CIFAR10', help='dataset')
     parser.add_argument('--num_classes', default=10, type=int, help='number of classes')
 
-    parser.add_argument('--batch', '--batch-size', "-b", default=128, type=int, metavar='N', help='batch size (default: 128)')
+    parser.add_argument('--batch', '--batch-size', "-b", default=256, type=int, metavar='N', help='batch size (default: 128)')
     parser.add_argument('--workers', default=4, type=int, metavar='N', help='number of data loading workers (default: 4)')
 
     parser.add_argument('--optimizer', default="SGD", help='optimizer to use, e.g. SGD, Adam')
     parser.add_argument('--lr', type=float, default=1e-2, help='learning rate for updating network parameters')
     parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum (default: 0.9)')
     parser.add_argument('-wd', '--weight_decay', default=5e-4, type=float, metavar='W', help='weight decay (default: 5e-4)', dest='weight_decay')
-    parser.add_argument("--nesterov", default=True, type=str_to_bool, help="if set nesterov")
     parser.add_argument("--scheduler", default="CosineAnnealingLR", type=str, help="Learning rate scheduler")
     parser.add_argument('--epochs', default=200, type=int, help='number of total epochs to run')
 
@@ -74,11 +74,11 @@ def main():
                                         transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))])
         trainset = torchvision.datasets.CIFAR10(root='./data', 
                                                 train=True, 
-                                                download=False, 
+                                                download=True, 
                                                 transform=transform_train)
         testset = torchvision.datasets.CIFAR10(root='./data', 
                                                train=False, 
-                                               download=False, 
+                                               download=True, 
                                                transform=transform)
 
     elif args.dataset == 'CIFAR100':
@@ -165,6 +165,9 @@ def train_model(model, train_loader, test_loader, device, learning_rate=5e-3,
     evalLossTensor = torch.empty((epochs,), dtype=torch.float64)
     epochTensor = torch.empty((epochs,), dtype=torch.int64)
 
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f'/loss log/training_plot_{timestamp}.png'
+
     for epoch in range(epochs):
       # Training
       epochTensor[epoch] = epoch
@@ -218,6 +221,7 @@ def train_model(model, train_loader, test_loader, device, learning_rate=5e-3,
         plt.ylabel('loss')
         plt.legend(loc='upper right')
 
+        plt.savefig(filename)
         plt.show()
 
     print("Best eval accuracy: {:.4f} @ epoch {:03d}".format(best_eval, best_epoch))
@@ -232,7 +236,7 @@ def train_model(model, train_loader, test_loader, device, learning_rate=5e-3,
     plt.xlabel('epochs')
     plt.ylabel('loss')
     plt.legend(loc='upper right')
-
+    plt.savefig(filename)
     plt.show()
 
     return model
