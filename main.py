@@ -1,4 +1,4 @@
-# import os
+import os
 import random
 
 import torchvision
@@ -166,7 +166,12 @@ def train_model(model, train_loader, test_loader, device, learning_rate=5e-3,
     epochTensor = torch.empty((epochs,), dtype=torch.int64)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f'/loss log/training_plot_{timestamp}.png'
+    filename = f'training_plot_{timestamp}.png'
+    folder_path = os.path.join(os.getcwd(), 'loss log')
+    os.makedirs(folder_path, exist_ok=True)
+    
+    # Save the plot in the specified folder
+    filepath = os.path.join(folder_path, filename)
 
     for epoch in range(epochs):
       # Training
@@ -221,7 +226,7 @@ def train_model(model, train_loader, test_loader, device, learning_rate=5e-3,
         plt.ylabel('loss')
         plt.legend(loc='upper right')
 
-        plt.savefig(filename)
+        plt.savefig(filepath)
         plt.show()
 
     print("Best eval accuracy: {:.4f} @ epoch {:03d}".format(best_eval, best_epoch))
@@ -236,7 +241,7 @@ def train_model(model, train_loader, test_loader, device, learning_rate=5e-3,
     plt.xlabel('epochs')
     plt.ylabel('loss')
     plt.legend(loc='upper right')
-    plt.savefig(filename)
+    plt.savefig(filepath)
     plt.show()
 
     return model
