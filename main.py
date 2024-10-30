@@ -105,7 +105,8 @@ def main():
     testloader = torch.utils.data.DataLoader(testset, batch_size=args.batch, shuffle=False, num_workers=args.workers)
 
     model = ResNet20_arr(a_bit=args.a_bit, w_bit=args.w_bit, split_bit=args.split_bit, w_mode=args.w_mode, ps_bit=args.ps_bit, num_sigma=args.num_sigma, psum_mode=args.ps_mode, block=BasicBlock_arr,
-                     arr_size=args.arr_size, num_layers=3, num_classes=args.num_classes, isRow=args.isRow, w_per_ch=args.w_ch, ps_per_ch=args.ps_ch, psumOpt=args.psumOpt, expand=1).cuda()
+                     arr_size=args.arr_size, num_units=[3, 3, 3], num_classes=args.num_classes, isRow=args.isRow, w_per_ch=args.w_ch, ps_per_ch=args.ps_ch, psumOpt=args.psumOpt, expand=1).cuda()
+
     model.train()
 
     train_model(model=model, train_loader=trainloader, test_loader=testloader,
