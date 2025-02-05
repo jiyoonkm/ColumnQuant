@@ -1,3 +1,5 @@
+# Column-wise Quantization of Weights and Partial Sums for Accurate and Efficient Compute-In-Memory Accelerators
+
 A convolutional framework for column-wise weight and partial-sum quantization.
 
 ## Overview
