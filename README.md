@@ -50,9 +50,6 @@ Handles layer-wise or channel-wise weight quantization.
 ### `Conv4Pim_group_arr`
 Handles array-wise or column-wise weight quantization.
 
-### `_v2` Versions
-The `v2` classes (`Conv4Pim_group_split_v2`, `Conv4Pim_group_arr_v2`) consider weight decomposition during splitting, optimizing for both positive and negative weight values.
-
 ## LSQ (Learned Step Size Quantization)
 
 `LSQ.py` follows [LSQ (Learned Step Size Quantization)](https://arxiv.org/abs/1902.08153) proposed by Steven K. Esser et al. from IBM for both weight and partial-sum quantization. Our LSQ implementation is revised to support various granularities based on [LSQ-Net repository](https://github.com/zhutmost/lsq-net).
