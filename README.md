@@ -6,9 +6,7 @@ The paper will be presented at DATE 2025.
 
 **Column-wise Quantization of Weights and Partial Sums for Accurate and Efficient Compute-In-Memory Accelerators**
 
-Jiyoon Kim, Kang Eun Jeon, Yulhwa Kim, and Jong Hwan Ko
-
-Paper: https://www.arxiv.org/abs/2502.07842
+🔗 https://www.arxiv.org/abs/2502.07842
 
 ## Overview
 
