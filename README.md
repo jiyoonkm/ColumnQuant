@@ -1,6 +1,8 @@
 # ColumnQuant
 
-A convolutional framework for column-wise weight and partial-sum quantization, which will be presented at DATE 2025.
+A convolutional framework for column-wise weight and partial-sum quantization.
+
+The paper will be presented at DATE 2025.
 
 **Column-wise Quantization of Weights and Partial Sums for Accurate and Efficient Compute-In-Memory Accelerators**
 
