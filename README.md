@@ -72,7 +72,7 @@ Handles array-wise or column-wise weight quantization.
 import torch
 from SplitConv4Pim_group import SplitConv4Pim_group
 
-# Example initialization: Array-wise weight and column-wise partial-sum quantization
+# Example initialization: Column-wise weight and partial-sum quantization with 256x256 arrays
 conv = SplitConv4Pim_group(
     w_bit=4,
     split_bit=2,
@@ -88,7 +88,7 @@ conv = SplitConv4Pim_group(
     padding=1,
     bias=False,
     isRow=True,
-    w_per_ch=False,
+    w_per_ch=True,
     ps_per_ch=True,
     psumOpt=True
 )
