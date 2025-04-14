@@ -2,7 +2,7 @@
 
 A convolutional framework for column-wise weight and partial-sum quantization.
 
-The paper has been proposed at DATE 2025.
+The paper has been presented at DATE 2025.
 
 **[🔗 Column-wise Quantization of Weights and Partial Sums for Accurate and Efficient Compute-In-Memory Accelerators](https://www.arxiv.org/abs/2502.07842)**
 
