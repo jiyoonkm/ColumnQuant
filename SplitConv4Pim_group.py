@@ -53,19 +53,19 @@ class SplitConv4Pim_group(torch.nn.Module):
         for s in range(self.num_splits):
 
             if self.w_mode == 'Array':
-                # v1: simpler version
+                # Option 1: simpler version
                 conv_module = Conv4Pim_group_arr(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
-                # v2: weight-decomposed version
+                # Option 2: weight-decomposed version
                 conv_module = Conv4Pim_group_arr_v2(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
-                # v3: v2 + LsqWeight v3
+                # Option 3: v2 + LsqWeight v3 assuming binary cells
                 conv_module = Conv4Pim_group_arr_v3(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
 
             elif self.w_mode == 'Layer':
-                # v1: simpler version
+                # Option 1: simpler version
                 conv_module = Conv4Pim_group_split(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
-                # v2: weight-decomposed version
+                # Option 2: weight-decomposed version
                 conv_module = Conv4Pim_group_split_v2(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
-                # v3: v2 + LsqWeight v3 assuming binary cells (w_bit: 2b or 3b available)
+                # Option 3: v2 + LsqWeight v3 assuming binary cells
                 conv_module = Conv4Pim_group_split_v3(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
 
             conv_module.weight = self.weight
@@ -83,7 +83,7 @@ class SplitConv4Pim_group(torch.nn.Module):
             output += self.split_conv[s](input) * self.bit_shift[s]
         return output
 
-''' v3: v2 + LsqWeight v3 assuming binary cells (w_bit: 2b or 3b available) '''
+''' v3: v2 + LsqWeight v3 assuming binary cells '''
 class Conv4Pim_group_split_v3(nn.Module):
     def __init__(self, w_bit, split_bit, idx, ps_bit, num_sigma, psum_mode, in_planes, planes, kernel_size, N, groups, stride, padding=1, isRow=False, w_per_ch=False, ps_per_ch=False, psumOpt=True):
         super().__init__()
@@ -109,10 +109,7 @@ class Conv4Pim_group_split_v3(nn.Module):
 
         self.num_ic = min(self.ic, self.N // (self.kernel_size**2))
 
-        if self.w_bit==2:
-            self.weight_quantize_fn = LsqWeight_2b(self.w_bit, self.w_per_ch)
-        elif w_bit==3:
-            self.weight_quantize_fn = LsqWeight_3b(self.w_bit, self.w_per_ch)
+        self.weight_quantize_fn = LsqWeight_v3(self.w_bit, self.w_per_ch)
 
         self.w_q = 0
 
@@ -293,10 +290,7 @@ class Conv4Pim_group_arr_v3(nn.Module):
         # Array-wise weight quantizers
         w_quan_fn = []
         for i in range(self.num_arrays):
-            if self.w_bit==2:
-                w_quan_fn.append(LsqWeight_2b(self.w_bit, self.w_per_ch))
-            elif self.w_bit==3:
-                w_quan_fn.append(LsqWeight_3b(self.w_bit, self.w_per_ch))
+            w_quan_fn.append(LsqWeight_v3(self.w_bit, self.w_per_ch))
         self.w_quan_fn = nn.ModuleList(w_quan_fn)
 
         self.row_slide = self.weight_tiler.row_slide
