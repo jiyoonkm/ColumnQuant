@@ -173,8 +173,8 @@ class LsqWeight_2b(nn.Module):
 
         w_q = self.round_pass(x, sH_scale, sL_scale)
 
-        return w_q, sH_scale, sL_scale
-
+        return w_q
+        
 class LsqWeight_3b(nn.Module):
     def __init__(self, bit, per_channel):       # bit: weight precision of each array
         super().__init__()
@@ -289,7 +289,7 @@ class LsqWeight_3b(nn.Module):
 
         w_q = self.round_pass(x, sH_scale, sM_scale, sL_scale)
 
-        return w_q, sH_scale, sL_scale
+        return w_q
 
 
 ''' for conv layer v2's: absolte-valued weight '''
