@@ -74,14 +74,14 @@ from SplitConv4Pim_group import SplitConv4Pim_group
 
 # Example initialization: Column-wise weight and partial-sum quantization with 256x256 arrays
 conv = SplitConv4Pim_group(
-    w_bit=4,
-    split_bit=2,
+    w_bit=3,
+    split_bit=1,
     w_mode='Array',
     ps_bit=3,
     num_sigma=6,
     psum_mode='Array',
     in_planes=64,
-    planes=128,
+    planes=64,
     kernel_size=3,
     N=256,
     stride=1,
