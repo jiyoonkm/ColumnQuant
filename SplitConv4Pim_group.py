@@ -114,7 +114,7 @@ class Conv4Pim_group_split_v3(nn.Module):
         elif w_bit==3:
             self.weight_quantize_fn = LsqWeight_3b(self.w_bit, self.w_per_ch)
 
-        self.w_q, self.sH, self.sL = 0, 0, 0
+        self.w_q = 0
 
         self.weight_tiler = weightTile_HxW(self.N*self.groups, self.N, self.ic, self.oc*self.groups, self.kernel_size, self.isRow)
         self.splitter = split4d(self.w_bit, self.split_bit)
@@ -144,7 +144,7 @@ class Conv4Pim_group_split_v3(nn.Module):
         w = math.floor((input_w-self.kernel_size+2*self.padding)/self.stride)+1
 
         ''' 1. Quantize weight: Round to pre-determined combinations of scale factors '''
-        self.w_q, self.sH, self.sL = self.weight_quantize_fn(self.weight)
+        self.w_q = self.weight_quantize_fn(self.weight)
 
         ''' POSITIVE WEIGHT '''
 
@@ -372,7 +372,7 @@ class Conv4Pim_group_arr_v3(nn.Module):
                         temp_weight = self.im2col_weight[col_slide*j+k][:num_oc-empty, :self.last_ic*(self.kernel_size**2)].reshape(num_oc-empty, self.last_ic, self.kernel_size, self.kernel_size)
                     else:
                         temp_weight = self.im2col_weight[col_slide*j+k][:num_oc-empty, :self.num_ic*(self.kernel_size**2)].reshape(num_oc-empty, self.num_ic, self.kernel_size, self.kernel_size)
-                    w_q, sH, sL= self.w_quan_fn[col_slide*j+k](temp_weight)
+                    w_q = self.w_quan_fn[col_slide*j+k](temp_weight)
                     temp_weight_q = w_q
                     w_list[j].append(temp_weight_q)
             else:
@@ -381,7 +381,7 @@ class Conv4Pim_group_arr_v3(nn.Module):
                         temp_weight = self.im2col_weight[col_slide*j+k][:, :self.last_ic*(self.kernel_size**2)].reshape(num_oc, self.last_ic, self.kernel_size, self.kernel_size)
                     else:
                         temp_weight = self.im2col_weight[col_slide*j+k][:, :self.num_ic*(self.kernel_size**2)].reshape(num_oc, self.num_ic, self.kernel_size, self.kernel_size)
-                    w_q, sH, sL= self.w_quan_fn[col_slide*j+k](temp_weight)
+                    w_q = self.w_quan_fn[col_slide*j+k](temp_weight)
                     temp_weight_q = w_q
                     w_list[j].append(temp_weight_q)
 
@@ -457,7 +457,7 @@ class Conv4Pim_group_arr_v3(nn.Module):
                         temp_weight = self.im2col_weight[col_slide*j+k][:num_oc-empty, :self.last_ic*(self.kernel_size**2)].reshape(num_oc-empty, self.last_ic, self.kernel_size, self.kernel_size)
                     else:
                         temp_weight = self.im2col_weight[col_slide*j+k][:num_oc-empty, :self.num_ic*(self.kernel_size**2)].reshape(num_oc-empty, self.num_ic, self.kernel_size, self.kernel_size)
-                    w_q, sH, sL= self.w_quan_fn[col_slide*j+k](temp_weight)
+                    w_q = self.w_quan_fn[col_slide*j+k](temp_weight)
                     temp_weight_q = w_q
                     w_list[j].append(temp_weight_q)
             else:
@@ -466,7 +466,7 @@ class Conv4Pim_group_arr_v3(nn.Module):
                         temp_weight = self.im2col_weight[col_slide*j+k][:, :self.last_ic*(self.kernel_size**2)].reshape(num_oc, self.last_ic, self.kernel_size, self.kernel_size)
                     else:
                         temp_weight = self.im2col_weight[col_slide*j+k][:, :self.num_ic*(self.kernel_size**2)].reshape(num_oc, self.num_ic, self.kernel_size, self.kernel_size)
-                    w_q, sH, sL= self.w_quan_fn[col_slide*j+k](temp_weight)
+                    w_q = self.w_quan_fn[col_slide*j+k](temp_weight)
                     temp_weight_q = w_q
                     w_list[j].append(temp_weight_q)
 
