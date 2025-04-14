@@ -1,5 +1,4 @@
-"""Adapted from https://github.com/zhutmost/lsq-net/blob/master/quan/quantizer/lsq.py
-"""
+""" Adapted from https://github.com/zhutmost/lsq-net/blob/master/quan/quantizer/lsq.py """
 
 import torch
 import torch.nn as nn
