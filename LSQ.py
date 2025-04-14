@@ -71,15 +71,6 @@ class LsqPsum(nn.Module):
         return x_q
 
 ''' for conv layer v3's: round to pre-determined combination of scale factors '''
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-
-def grad_scale(x, scale):
-    y = x
-    y_grad = x * scale
-    return (y - y_grad).detach() + y_grad
-
 class LsqWeight_v3(nn.Module):
     def __init__(self, bit, per_channel=False):       # bit: weight precision of each array
         super().__init__()
