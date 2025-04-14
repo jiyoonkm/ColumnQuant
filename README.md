@@ -70,7 +70,7 @@ This repository provides three variants of custom convolution layers, each offer
 
 ## LSQ (Learned Step Size Quantization)
 
-`LSQ.py` follows [LSQ (Learned Step Size Quantization)](https://arxiv.org/abs/1902.08153) proposed by Steven K. Esser et al. from IBM for both weight and partial-sum quantization. Our LSQ implementation is revised to support various granularities based on [LSQ-Net repository](https://github.com/zhutmost/lsq-net).
+`LSQ.py` follows [LSQ (Learned Step Size Quantization)](https://arxiv.org/abs/1902.08153) proposed by Steven K. Esser et al. from IBM for both weight and partial-sum quantization, and is implemented based on [LSQ-Net repository](https://github.com/zhutmost/lsq-net). Our LSQ implementation is revised to support various granularities.
 
 ### Key LSQ Features:
 - **Scale Factor Initialization**: The scale factors for weight quantization is initialized using the mean absolute value of the tensor. In the case of partial-sum quantization, the scale factors are initialized to constant values.
