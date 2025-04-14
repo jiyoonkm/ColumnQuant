@@ -7,7 +7,7 @@ from torch.nn.modules.batchnorm import BatchNorm2d
 import numpy as np
 
 from any_quant import qfn, activation_quantize_fn, weight_quantize_fn, psum_quantize_fn, Activate, Linear_Q#, BatchNorm2d_Q
-from LSQ import LsqWeight, LsqPsum
+from LSQ import *
 from utils import split4d, im2col_weight, weightTile_HxW
 from SplitConv4Pim_group import SplitConv4Pim_group
 
