@@ -89,9 +89,9 @@ class LsqWeight_v3(nn.Module):
         base_scale = None
         
         if self.per_channel:
-            base_scale = x.detach().abs().mean(dim=list(range(1, x.dim())), keepdim=True)       # LSQ paper v2
+            base_scale = x.detach().abs().mean(dim=list(range(1, x.dim())), keepdim=True)   # LSQ paper v2
         else:
-            base_scale = x.detach().abs().mean()                             # LSQ paper v2
+            base_scale = x.detach().abs().mean()                                            # LSQ paper v2
         
         # Initialize each scale parameter (with decreasing values)
         for i in range(self.num_scales):
