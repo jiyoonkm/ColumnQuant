@@ -6,7 +6,7 @@ The paper has been proposed at DATE 2025.
 
 **Column-wise Quantization of Weights and Partial Sums for Accurate and Efficient Compute-In-Memory Accelerators**
 
-🔗 https://www.arxiv.org/abs/2502.07842
+[🔗 Link to preprint](https://www.arxiv.org/abs/2502.07842)
 
 ## Overview
 
@@ -15,6 +15,20 @@ The paper has been proposed at DATE 2025.
 - Partial-sum quantization from layer-wise to column-wise level
 
 The primary functionality includes handling quantization using LSQ (Learned Step Size Quantization) for both weights and partial-sums, enabling precise control over various granularities and optimization for CIM architectures.
+
+### Custom Convolution Layer Variants
+This repository provides three variants of custom convolution layers, each offering a different weight quantization and decomposition methods.
+
+**Option 1: Vanilla**
+- `conv_module = Conv4Pim_group_split(...)` or `Conv4Pim_group_arr(...)`
+
+**Option 2: Weight-decomposed version**
+- `conv_module = Conv4Pim_group_split_v2(...)` or `Conv4Pim_group_arr_v3(...)`
+- This version incorporates weight decomposition of positive and negative arrays to reflect practical settings of RRAM-based CIM architectures.
+
+**Option 3: Weight decomposition + LsqWeight_v3**
+- `conv_module = Conv4Pim_group_split_v3(...)` or `Conv4Pim_group_arr_v3(...)`
+- Building upon Option 2, this version integrates an improved LSQ scheme optimized for binary RRAM-based CIM hardware.
 
 ## Key Features
 
