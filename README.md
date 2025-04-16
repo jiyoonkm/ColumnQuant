@@ -61,7 +61,7 @@ This repository provides three variants of custom convolution layers, each offer
 - `conv_module = Conv4Pim_group_split(...)` or `Conv4Pim_group_arr(...)`
 
 **Option 2: Weight-decomposed version**
-- `conv_module = Conv4Pim_group_split_v2(...)` or `Conv4Pim_group_arr_v3(...)`
+- `conv_module = Conv4Pim_group_split_v2(...)` or `Conv4Pim_group_arr_v2(...)`
 - This version incorporates weight decomposition of positive and negative arrays to reflect practical settings of RRAM-based CIM architectures.
 
 **Option 3: Weight decomposition + LsqWeight_v3**
