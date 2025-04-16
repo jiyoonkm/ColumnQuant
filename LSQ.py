@@ -247,3 +247,46 @@ class LsqWeight(nn.Module):
         w_q = (w_q_int-2**(self.wbit-1)) * s_scale
 
         return w_q, w_q_int, s_scale
+
+##########################################################################################
+
+def decompose_weights(w_q, scales):
+
+    device = w_q.device
+    wp = torch.zeros_like(w_q)
+    wn = torch.zeros_like(w_q)
+
+    # Generate all possible quantized values and their decompositions
+    n_bit = len(scales)
+
+    # Generate all combinations of coefficients (-1, 0, 1) for each scale
+    coeff_values = torch.tensor([-1, 0, 1], dtype=torch.float32, device=device)
+    meshgrids = torch.meshgrid(*[coeff_values for _ in range(n_bit)], indexing='ij')
+    coefficients = torch.stack([grid.flatten() for grid in meshgrids], dim=1)
+
+    # Calculate all possible quantized values
+    quant_values = torch.zeros(coefficients.shape[0], device=device)
+    for i in range(n_bit):
+        quant_values += scales[i].item() * coefficients[:, i]
+
+    # For each possible quantized value, determine wp and wn
+    for i in range(len(quant_values)):
+        q_val = quant_values[i]
+
+        # Calculate positive and negative components
+        pos_contrib = torch.zeros(n_bit, device=device)
+        neg_contrib = torch.zeros(n_bit, device=device)
+
+        for j in range(n_bit):
+            if coefficients[i, j] == 1:
+                pos_contrib[j] = scales[j].item()
+            elif coefficients[i, j] == -1:
+                neg_contrib[j] = scales[j].item()
+
+        # Set wp and wn values for elements matching this quantized value
+        mask = (torch.abs(w_q - q_val) < 1e-6)  # Using small epsilon for float comparison
+        if mask.any():
+            wp[mask] = pos_contrib.sum()
+            wn[mask] = neg_contrib.sum()
+
+    return wp, wn
