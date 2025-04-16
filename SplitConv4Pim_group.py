@@ -147,7 +147,7 @@ class Conv4Pim_group_split_v3(nn.Module):
 
         ''' 2. Decompose: Get positive one '''
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        self.w_split_p = torch.relu(self.w_q)
+        self.w_split_p = torch.relu(self.w_q)        # Conventional weight decomposition: absolute value & zero
 
         ''' 3. Group Conv '''
         img = torch.cat([input]*self.groups, dim=1)                             # expand input for group conv
@@ -193,7 +193,7 @@ class Conv4Pim_group_split_v3(nn.Module):
         ''' NEGATIVE  WEIGHT '''
 
         ''' 2. Decompose: Get negative one '''
-        self.w_split_n = torch.relu(-self.w_q)
+        self.w_split_n = torch.relu(-self.w_q)        # Conventional weight decomposition: absolute value & zero
 
         ''' 3. Group Conv '''
         output_n = 0
@@ -323,6 +323,8 @@ class Conv4Pim_group_arr_v3(nn.Module):
 
     def forward(self, input):
         img_num, _, input_h, input_w = input.shape
+        
+        # Conventional weight decomposition: absolute value & zero
         self.weight_p = torch.relu(self.weight)
         self.weight_n = torch.relu(-self.weight)
 
