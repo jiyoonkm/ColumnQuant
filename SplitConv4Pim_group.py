@@ -58,6 +58,7 @@ class SplitConv4Pim_group(torch.nn.Module):
                 # Option 2: weight-decomposed version
                 conv_module = Conv4Pim_group_arr_v2(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
                 # Option 3: v2 + LsqWeight v3 assuming binary cells
+                # Keep split_bit same as w_bit
                 conv_module = Conv4Pim_group_arr_v3(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
 
             elif self.w_mode == 'Layer':
@@ -66,6 +67,7 @@ class SplitConv4Pim_group(torch.nn.Module):
                 # Option 2: weight-decomposed version
                 conv_module = Conv4Pim_group_split_v2(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
                 # Option 3: v2 + LsqWeight v3 assuming binary cells
+                # Keep split_bit same as w_bit
                 conv_module = Conv4Pim_group_split_v3(self.w_bit, self.split_bit, s, self.ps_bit, self.num_sigma, self.psum_mode, self.ic, self.oc, self.kernel_size, self.N, self.groups, self.stride, self.padding, self.isRow, self.w_per_ch, self.ps_per_ch, self.psumOpt)
 
             conv_module.weight = self.weight
@@ -88,7 +90,7 @@ class Conv4Pim_group_split_v3(nn.Module):
     def __init__(self, w_bit, split_bit, idx, ps_bit, num_sigma, psum_mode, in_planes, planes, kernel_size, N, groups, stride, padding=1, isRow=False, w_per_ch=False, ps_per_ch=False, psumOpt=True):
         super().__init__()
         self.w_bit = w_bit
-        self.split_bit = split_bit
+        self.split_bit = split_bit    # Keep split_bit same as w_bit
         self.idx = idx
 
         self.ps_bit = ps_bit
@@ -241,7 +243,7 @@ class Conv4Pim_group_arr_v3(nn.Module):
     def __init__(self, w_bit, split_bit, idx, ps_bit, num_sigma, psum_mode, in_planes, planes, kernel_size, N, groups, stride, padding=1, isRow=False, w_per_ch=False, ps_per_ch=False, psumOpt=True):
         super().__init__()
         self.w_bit = w_bit
-        self.split_bit = split_bit
+        self.split_bit = split_bit    # Keep split_bit same as w_bit
         self.idx = idx
 
         self.ps_bit = ps_bit
